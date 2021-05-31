@@ -61,14 +61,21 @@ public:
 		
 
 		for (int i = 0; i < balls.size(); i++) {
-			balls[i]->CalculatePosition(balls, topWall, bottomWall, leftWall, rightWall);
+			balls[i]->Calculate(balls, topWall, bottomWall, leftWall, rightWall);
 		}
 
 	}
 
-	void AddBall(float radius = 0.1, float r = 1, float g = 1, float b = 1) {
-		Ball* ball = new Ball(balls, topWall, bottomWall, leftWall, rightWall, radius, r, g, b);
+	void AddBall(float radius = 0.1, bool infected = false, bool fixed = false, float r = 1, float g = 1, float b = 1) {
+		Ball* ball = new Ball(balls, topWall, bottomWall, leftWall, rightWall, radius, infected, fixed, r, g, b);
 		balls.push_back(ball);
+	}
+
+	void AddBalls(int balls, int fixed, float radius) {
+		for (int i = 0; i < balls - 1; i++) {
+			AddBall(radius, false, (i < fixed));
+		}
+		AddBall(radius, true);
 	}
 
 };

@@ -12,10 +12,15 @@ public:
 	float radius;
 	float mass;
 	float r, g, b;
+	bool fixed;
+	bool infected;
 
-	Ball(std::vector<Ball*> balls, float topWall, float bottomWall, float leftWall, float rightWall, float radius, float r, float g, float b) {
+	Ball(std::vector<Ball*> balls, float topWall, float bottomWall, float leftWall, float rightWall, float radius, bool infected, bool fixed, float r, float g, float b) {
 
 		this->radius = radius;
+		this->fixed = fixed;
+		this->infected = infected;
+
 		mass = (pow(radius, 3) * PI * 3 / 4);
 
 		for (int i = 0; i < 1000; i++) { //Tysi¹c prób odnalezienia pustej przestrzeni.
@@ -57,13 +62,23 @@ public:
 		glPushMatrix();
 		glTranslatef(positionX, positionY, 0);
 
-		glColor3f(r, g, b);
+		//glColor3f(r, g, b);
+		if(infected)
+			glColor3f(1, 0, 0);
+		else
+			glColor3f(0, 1, 0);
+
 		glutSolidSphere(radius, 50, 50);
 
 		glPopMatrix();
 	}
 
-	void CalculatePosition(std::vector<Ball*> balls, float topWall, float bottomWall, float leftWall, float rightWall) {
+	void Calculate(std::vector<Ball*> balls, float topWall, float bottomWall, float leftWall, float rightWall) {
+		if (fixed) {
+			motionX = 0;
+			motionY = 0;
+		}
+
 		positionX += motionX;
 		positionY += motionY;
 	}
@@ -111,15 +126,36 @@ public:
 
 		a = y21 / x21;
 		dvx2 = -2 * (vx21 + a * vy21) / ((1 + a * a) * (1 + m21));
-		vx2 = vx2 + dvx2;
-		vy2 = vy2 + a * dvx2;
+
+		if (!fixed) {
+
 		vx1 = vx1 - m21 * dvx2;
 		vy1 = vy1 - a * m21 * dvx2;
-
 		vx1 = (vx1 - vx_cm) * R + vx_cm;
 		vy1 = (vy1 - vy_cm) * R + vy_cm;
+
+		vx2 = vx2 + dvx2;
+		vy2 = vy2 + a * dvx2;
 		vx2 = (vx2 - vx_cm) * R + vx_cm;
 		vy2 = (vy2 - vy_cm) * R + vy_cm;
+
+		}
+		else {
+			float vx1N = vx1 - m21 * dvx2;
+			float vy1N = vy1 - a * m21 * dvx2;
+			vx1N = (vx1N - vx_cm) * R + vx_cm;
+			vy1N = (vy1N - vy_cm) * R + vy_cm;
+
+			vx2 = vx2 + dvx2;
+			vy2 = vy2 + a * dvx2;
+			vx2 = (vx2 - vx_cm) * R + vx_cm - vx1N;
+			vy2 = (vy2 - vy_cm) * R + vy_cm - vy1N;
+		}
+
+		if (this->infected)
+			ball->infected = true;
+		if (ball->infected)
+			this->infected = true;
 
 		return;
 
